@@ -1,0 +1,23 @@
+~$ cd cassandra/apache-cassandra-3.11.0/
+bmsce@bmsce-Precision-T1700:~/cassandra/apache-cassandra-3.11.0$ cd bin
+bmsce@bmsce-Precision-T1700:~/cassandra/apache-cassandra-3.11.0/bin$ ./cqlsh
+
+
+cqlsh> CREATE KEYSPACE "Students" WITH REPLICATION ={'class':'SimpleStrategy','replication_factor':1} ;
+
+cqlsh> describe keyspaces;
+
+cqlsh> select * from system_schema.keyspaces;
+
+cqlsh> use "Students";
+
+cqlsh:Students> create table student_info(rollnum int Primary Key, StudName text, DOJ timestamp, Percentage double);
+cqlsh:Students> describe table student_info;
+
+cqlsh:Students> begin batch
+            ... insert into student_info(rollnum,Studname,DOJ,Percentage)values(10,'BAVON','2004-11-25',78.0);
+            ... insert into student_info(rollnum,Studname,DOJ,Percentage)values(20,'CYANIDE','2004-06-15',58.5);
+            ... insert into student_info(rollnum,Studname,DOJ,Percentage)values(30,'GLADPUS','2004-04-23',73.5);
+            ... insert into student_info(rollnum,Studname,DOJ,Percentage)values(40,'SOVIET','2004-09-16',90.8);
+            ... apply batch;
+
