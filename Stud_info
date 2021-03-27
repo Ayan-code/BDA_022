@@ -7,17 +7,104 @@ cqlsh> CREATE KEYSPACE "Students" WITH REPLICATION ={'class':'SimpleStrategy','r
 
 cqlsh> describe keyspaces;
 
-cqlsh> select * from system_schema.keyspaces;
+"Students"     system_auth  system_distributed
+system_schema  system       system_traces     
+
 
 cqlsh> use "Students";
 
-cqlsh:Students> create table student_info(rollnum int Primary Key, StudName text, DOJ timestamp, Percentage double);
-cqlsh:Students> describe table student_info;
+cqlsh:Students> create table student_info(rollno int primary key,name text, dateofjoin timestamp,marks double);
+cqlsh:Students> insert into student_info(1,"ABC",2020-03-09,99.0);
+SyntaxException: line 1:25 no viable alternative at input '1' (insert into student_info([1]...)
 
-cqlsh:Students> begin batch
-            ... insert into student_info(rollnum,Studname,DOJ,Percentage)values(10,'BAVON','2004-11-25',78.0);
-            ... insert into student_info(rollnum,Studname,DOJ,Percentage)values(20,'CYANIDE','2004-06-15',58.5);
-            ... insert into student_info(rollnum,Studname,DOJ,Percentage)values(30,'GLADPUS','2004-04-23',73.5);
-            ... insert into student_info(rollnum,Studname,DOJ,Percentage)values(40,'SOVIET','2004-09-16',90.8);
-            ... apply batch;
+cqlsh:Students> insert into student_info (rollno,name,dateofjoin,marks) VALUES (1,'ABC','2020-03-09',99.0);
+cqlsh:Students> insert into student_info (rollno,name,dateofjoin,marks) VALUES (2,'XYZ','2020-04-09',69.0);
+cqlsh:Students> insert into student_info (rollno,name,dateofjoin,marks) VALUES (3,'Ram','2020-05-09',60.0);
+cqlsh:Students> insert into student_info (rollno,name,dateofjoin,marks) VALUES (4,'Ram','2020-05-10',100.0);
+cqlsh:Students> insert into student_info (rollno,name,dateofjoin,marks) VALUES (5,'Shyam','2020-05-10',100.0);
+cqlsh:Students> select * from student_info;
 
+ rollno | dateofjoin                      | marks | name
+--------+---------------------------------+-------+-------
+      5 | 2020-05-09 18:30:00.000000+0000 |   100 | Shyam
+      1 | 2020-03-08 18:30:00.000000+0000 |    99 |   ABC
+      2 | 2020-04-08 18:30:00.000000+0000 |    69 |   XYZ
+      4 | 2020-05-09 18:30:00.000000+0000 |   100 |   Ram
+      3 | 2020-05-08 18:30:00.000000+0000 |    60 |   Ram
+
+(5 rows)
+
+cqlsh:Students> select * from student_info where rollno in (1,5,2);
+
+ rollno | dateofjoin                      | marks | name
+--------+---------------------------------+-------+-------
+      1 | 2020-03-08 18:30:00.000000+0000 |    99 |   ABC
+      2 | 2020-04-08 18:30:00.000000+0000 |    69 |   XYZ
+      5 | 2020-05-09 18:30:00.000000+0000 |   100 | Shyam
+
+(3 rows)
+cqlsh:Students> create index on student_info(name);
+cqlsh:Students> select * from student_info where name = 'XYZ';
+
+ rollno | dateofjoin                      | marks | name
+--------+---------------------------------+-------+------
+      2 | 2020-04-08 18:30:00.000000+0000 |    69 |  XYZ
+
+(1 rows)
+cqlsh:Students> insert into student_info (rollno,name,dateofjoin,marks) VALUES (6,'Shyam','2020-05-10',10.0);
+cqlsh:Students> select * from student_info where name = 'Shyam';
+
+ rollno | dateofjoin                      | marks | name
+--------+---------------------------------+-------+-------
+      5 | 2020-05-09 18:30:00.000000+0000 |   100 | Shyam
+      6 | 2020-05-09 18:30:00.000000+0000 |    10 | Shyam
+
+(2 rows)
+cqlsh:Students> select * from student_info limit 2;
+
+ rollno | dateofjoin                      | marks | name
+--------+---------------------------------+-------+-------
+      5 | 2020-05-09 18:30:00.000000+0000 |   100 | Shyam
+      1 | 2020-03-08 18:30:00.000000+0000 |    99 |   ABC
+
+(2 rows)
+cqlsh:Students> update student_info set name ="Ravan" where rollno=4;
+SyntaxException: line 1:38 no viable alternative at input 'where' (update student_info set name =["Rava]n" where...)
+cqlsh:Students> update student_info set name ='Ravan' where rollno=4;
+cqlsh:Students> select * from student_info;
+
+ rollno | dateofjoin                      | marks | name
+--------+---------------------------------+-------+-------
+      5 | 2020-05-09 18:30:00.000000+0000 |   100 | Shyam
+      1 | 2020-03-08 18:30:00.000000+0000 |    99 |   ABC
+      2 | 2020-04-08 18:30:00.000000+0000 |    69 |   XYZ
+      4 | 2020-05-09 18:30:00.000000+0000 |   100 | Ravan
+      6 | 2020-05-09 18:30:00.000000+0000 |    10 | Shyam
+      3 | 2020-05-08 18:30:00.000000+0000 |    60 |   Ram
+
+(6 rows)
+cqlsh:Students> delete from student_info where rollno=1;
+cqlsh:Students> select * from student_info;
+
+ rollno | dateofjoin                      | marks | name
+--------+---------------------------------+-------+-------
+      5 | 2020-05-09 18:30:00.000000+0000 |   100 | Shyam
+      2 | 2020-04-08 18:30:00.000000+0000 |    69 |   XYZ
+      4 | 2020-05-09 18:30:00.000000+0000 |   100 | Ravan
+      6 | 2020-05-09 18:30:00.000000+0000 |    10 | Shyam
+      3 | 2020-05-08 18:30:00.000000+0000 |    60 |   Ram
+
+(5 rows)
+cqlsh:Students> delete from student_info where name='XYZ';
+
+cqlsh:Students> select * from student_info;
+
+ rollno | dateofjoin                      | marks | name
+--------+---------------------------------+-------+-------
+      5 | 2020-05-09 18:30:00.000000+0000 |   100 | Shyam
+      2 | 2020-04-08 18:30:00.000000+0000 |    69 |   XYZ
+      4 | 2020-05-09 18:30:00.000000+0000 |   100 | Ravan
+      6 | 2020-05-09 18:30:00.000000+0000 |    10 | Shyam
+      3 | 2020-05-08 18:30:00.000000+0000 |    60 |   Ram
+
+(5 rows)
